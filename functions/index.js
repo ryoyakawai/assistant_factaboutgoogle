@@ -46,7 +46,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                        alt: 'Googleplex'};
                 break;
             }
-            let factSpeech = 'This is ' + factCategory + ' about Google based on infomation on wikipedia.com on October twentieth 2017.' + fact + 'What would you like to hear about next? Google\'s history or headquarters? Or to quit, say bye.';
+            let factSpeech = 'This is ' + factCategory + ' about Google based on infomation on www.wikipedia.org on October twentieth 2017.' + fact + 'What would you like to hear about next? Google\'s history or headquarters? Or to quit, say bye.';
             if(app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
                && (card.src!=null && card.alt!=null) ) {
                 app.ask(app.buildRichResponse()
