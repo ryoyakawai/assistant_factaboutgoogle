@@ -37,6 +37,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 
                 break;
             case 'headquarters':
+            case 'headquarter':
             case 'HQ':
                 fact = 'Google\'s headquarters in Mountain View, California, is referred to as the Googleplex, a play on words on the number googolplex and the headquarters itself being a complex of buildings. The lobby is decorated with a piano, lava lamps, old server clusters, and a projection of search queries on the wall.';
                 card ={src: 'https://www.solarpowerauthority.com/wp-content/uploads/solar-panels-on-the-googleplex.jpg',

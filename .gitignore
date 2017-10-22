@@ -59,3 +59,4 @@ typings/
 
 # firebase
 .firebaserc
+firebase-debug.log
