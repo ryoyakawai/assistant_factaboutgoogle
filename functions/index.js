@@ -14,7 +14,7 @@
  * limitations under the License.
 **/
 'use strict';
-
+console.log('[Deploy Done]');
 const functions = require('firebase-functions'); // Cloud Functions for Firebase library
 const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
 
@@ -22,6 +22,7 @@ const googleAssistantRequest = 'google'; // Constant to identify Google Assistan
 
 const sendMessage = require('./sendmessage.js');
 sendMessage.init();
+
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     console.log('Request headers: ' + JSON.stringify(request.headers));
@@ -43,51 +44,36 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     let moment = require('moment');
     let fact = 'Default Fact';
     let card = {src: null, alt: null};
-    let factCategory = app.getArgument('fact-category');
+    let cateName = app.getArgument('fact-category');
     
+    console.log('[Category] ', cateName);
     const actionHandlers = {
+        'input.unknown': () => {
+            let body = '['+getTimeStamp()+'] This message send by hooked by fulfillment of Dialogflow through the Firebase Cloud Messaging.';
+            sendMessage.setPayload(
+                'Sound Maker',
+                body,
+                null,
+                'https://actionswithfcm-7362c.firebaseapp.com?play=' + app.getRawInput()
+            );
+            sendMessage.sendNotifications();
+        },
+/*
         'tell_fact': () => {
-            console.log('[!!!!!!! Argument !!!!!!]', app.getArgument());
-            console.log('[!!!!!!! Input !!!!!!]', app.getRawInput());
-
-            switch(factCategory) {
+            switch(cateName) {
             case 'history':
             case 'past':
-                fact = 'Google Inc. is an American multinational technology company that specializes in Internet-related services and products. These include online advertising technologies, search, cloud computing, software, and hardware. Google was founded in 1998 by Larry Page and Sergey Brin while they were Ph.D. students at Stanford University, in California.'; 
-                card ={src: 'http://162.243.3.155/wp-content/uploads/2016/03/wp-page_brin-COURTESY-GOOGLE.jpg',
-                       alt: 'Larry Page & Sergey Brin'};
+                fact = 'Good to hear that. Do you want to hear another one?'; 
                 break;
             case 'headquarters':
             case 'headquarter':
-            case 'HQ':
-                fact = 'Google\'s headquarters in Mountain View, California, is referred to as the Googleplex, a play on words on the number googolplex and the headquarters itself being a complex of buildings. The lobby is decorated with a piano, lava lamps, old server clusters, and a projection of search queries on the wall.';
-                card ={src: 'https://www.solarpowerauthority.com/wp-content/uploads/solar-panels-on-the-googleplex.jpg',
-                       alt: 'Googleplex'};
+                fact = 'Sorry about that. May I have another shot?';
                 break;
             }
-            let factSpeech = 'This is ' + factCategory + ' about Google based on infomation on www.wikipedia.org on October twentieth 2017.' + fact + 'What would you like to hear about next? Google\'s history or headquarters? Or to quit, say bye.';
-            if(app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
-               && (card.src!=null && card.alt!=null) ) {
-                app.ask(app.buildRichResponse()
-                        .addSimpleResponse({speech: factSpeech, displayText: 'Google\'s ' + factCategory})
-                        .addBasicCard(
-                            app.buildBasicCard(fact)
-                                .setImage(card.src, card.alt)
-                        )
-                       );//.addSuggestions(['history', 'Headquarters']);
-
-            } else {
-                app.ask(factSpeech);
-            }
-            let body = '['+getTimeStamp()+'] This message send by hooked by fulfillment of Dialogflow through the Firebase Cloud Messaging.';
-            sendMessage.setPayload(
-                'Message from Assistant',
-                body,
-                null,
-                'https://project-8536650604564033537.firebaseapp.com?play=' + app.getRawInput()
-            );
-            sendMessage.sendNotifications();
+            let factSpeech = fact + ',or to finish, say Bye.';
+            app.ask(factSpeech);
         }
+*/
     };
 
     // If undefined or unknown action use the default handler

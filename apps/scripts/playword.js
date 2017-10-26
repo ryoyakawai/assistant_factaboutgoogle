@@ -51,9 +51,11 @@ Playword.prototype = {
             setTimeout(() => {
              this.synth.send([0x90, seq[i].note, 100]);
             }, seq[i].time);
+/*
             setTimeout(() => {
                 this.synth.send([0x80, seq[i].note, 0]);
-            }, seq[i].time + 10000);
+            }, seq[i].time + 5000);
+*/
         } 
 
     }
