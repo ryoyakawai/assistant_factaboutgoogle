@@ -1,9 +1,27 @@
+/**
+ * Copyright 2017 Ryoya Kawai
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+**/
 'use strict';
 
 const functions = require('firebase-functions'); // Cloud Functions for Firebase library
 const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
 
 const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
+
+const sendMessage = require('./sendmessage.js');
+sendMessage.init();
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
     console.log('Request headers: ' + JSON.stringify(request.headers));
@@ -22,19 +40,22 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     const requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
     const app = new DialogflowApp({request: request, response: response});
     
+    let moment = require('moment');
     let fact = 'Default Fact';
     let card = {src: null, alt: null};
     let factCategory = app.getArgument('fact-category');
     
     const actionHandlers = {
         'tell_fact': () => {
+            console.log('[!!!!!!! Argument !!!!!!]', app.getArgument());
+            console.log('[!!!!!!! Input !!!!!!]', app.getRawInput());
+
             switch(factCategory) {
             case 'history':
             case 'past':
                 fact = 'Google Inc. is an American multinational technology company that specializes in Internet-related services and products. These include online advertising technologies, search, cloud computing, software, and hardware. Google was founded in 1998 by Larry Page and Sergey Brin while they were Ph.D. students at Stanford University, in California.'; 
                 card ={src: 'http://162.243.3.155/wp-content/uploads/2016/03/wp-page_brin-COURTESY-GOOGLE.jpg',
                        alt: 'Larry Page & Sergey Brin'};
-                
                 break;
             case 'headquarters':
             case 'headquarter':
@@ -53,10 +74,19 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                             app.buildBasicCard(fact)
                                 .setImage(card.src, card.alt)
                         )
-                       ).addSuggestions(['history', 'Headquarters']);
+                       );//.addSuggestions(['history', 'Headquarters']);
+
             } else {
                 app.ask(factSpeech);
             }
+            let body = '['+getTimeStamp()+'] This message send by hooked by fulfillment of Dialogflow through the Firebase Cloud Messaging.';
+            sendMessage.setPayload(
+                'Message from Assistant',
+                body,
+                null,
+                'https://project-8536650604564033537.firebaseapp.com?play=' + app.getRawInput()
+            );
+            sendMessage.sendNotifications();
         }
     };
 
@@ -67,5 +97,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     
     // Run the proper handler function to handle the request from Dialogflow
     actionHandlers[action]();
-    
+
+    function getTimeStamp() {
+        return moment().format();
+    }
 });
