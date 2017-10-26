@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meat charset="utf-8" />
+    <title>Getting Started with the Firebase Realtime Database on the Web, Part 2</title>
+  </head>
+  <body>
+    <pre id="preObject"></pre>
+
+    <ul id="ulList"></ul>
+    
+    <script src="./keys.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+
+    <script type="text/javascript">
+     firebase.initializeApp(config);
+
+     let preObject = document.querySelector('#preObject');
+     let ulList = document.querySelector('#ulList');
+
+     let dbRefObject = firebase.database().ref().child('object');
+     let dbRefList = dbRefObject.child('hobbies');
+
+     
+     // Sync object changes
+     dbRefObject.on('value', (snap) => {
+         preObject.innerText = JSON.stringify(snap.val(), null, 3);
+     });
+
+     // Sync list changes
+     dbRefList.on('child_added', (snap) => {
+         const li = document.createElement('li');
+         li.innerText = snap.val();
+         li.id = snap.key;
+         ulList.appendChild(li);
+     });
+
+     dbRefList.on('child_changed', (snap) => {
+         const liChanged = document.querySelector('#'+snap.key);
+         liChanged.innerText = snap.val();
+     });
+
+     dbRefList.on('child_removed', (snap) => {
+         const liToRemove = document.querySelector('#'+snap.key);
+         liToRemove.remove();
+     });
+     
+    </script>
+  </body>
+</html>

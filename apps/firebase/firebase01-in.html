@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meat charset="utf-8" />
+    <title>Using FirebaseUI Auth, on the Web</title>
+  </head>
+  <body>
+    <h1 align="center">Singed-In: Firebase Auth Quickstart Demo</h1>
+    <h1 id="status">Not Sign-in.</h1>
+    <h1 id="bigOne"></h1>
+
+
+    <script src="./keys.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+
+    <script type="text/javascript">
+     firebase.initializeApp(config);
+    </script>
+    <script type="text/javascript">
+     firebase.auth().onAuthStateChanged( (user) => {
+         let bigOne = document.querySelector('#bigOne');
+         let status = document.querySelector('#status');
+         if(user) {
+             console.log(user);
+             status.innerText = 'Singed-in';
+             let dbRef = firebase.database().ref().child('text');
+             dbRef.on('value', (snap) => bigOne.innerText = snap.val() );
+         } else {
+             status.innerText = 'NOT Singed-in';
+             bigOne.innerText="no user signed in.";
+         }
+
+     } );
+    </script>
+
+    
+  </body>
+</html>
+
+    

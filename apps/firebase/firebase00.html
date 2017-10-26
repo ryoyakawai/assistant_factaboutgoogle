@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meat charset="utf-8" />
+    <title>Getting Started with Firebase on the Web</title>
+  </head>
+  <body>
+    <h1 id="bigOne"></h1>
+    <script src="./keys.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+
+    <script type="text/javascript">
+     firebase.initializeApp(config);
+
+     let bigOne = document.querySelector('#bigOne');
+     let dbRef = firebase.database().ref().child('text');
+     dbRef.on('value', (snap) => bigOne.innerText = snap.val() );
+    </script>
+  </body>
+</html>
