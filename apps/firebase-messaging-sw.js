@@ -48,3 +48,4 @@ messaging.setBackgroundMessageHandler(function(payload) {
       notificationOptions);
 });
 // [END background_handler]
+

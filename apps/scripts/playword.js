@@ -13,6 +13,7 @@ const Playword = function(synth) {
     this.bpm = 120;
     this.bpmillis = 0;
     this.seqNo = null;
+    this.midiOut = null;
 };
 
 Playword.prototype = {
@@ -25,6 +26,18 @@ Playword.prototype = {
     },
     getNoteno: function(word) {
         return this.noteMap[word];
+    },
+    setMIDIOutdevice: function(obj) {
+        this.midiOut = obj;
+    },
+    sendProgramChange: function(ch, no) {
+        let self = this;
+        setTimeout(() => {
+            let s = "0xc"+ch.toString(16, 10);
+            let prgNo = '0x'+('0000'+no.toString(16,10)).substr(-2);
+            if(self.midiOut !== null) self.midiOut.sendRawMessage([s, prgNo]);
+        }, 500);
+
     },
     text2seq: function(word) {
         if(this.bpmillis==0) this.bpm2msec(); 
@@ -46,18 +59,18 @@ Playword.prototype = {
     },
     play: function(word) {
         let seq = this.text2seq(word);
-        
         for(let i=0; i<seq.length; i++) {
+            let midi = {noteOn: [0x91, seq[i].note, 100], noteOff:[0x81, seq[i].note, 100] };
             setTimeout(() => {
-             this.synth.send([0x90, seq[i].note, 100]);
+                this.synth.send(midi.noteOn);
+                if(this.midiOut !== null) this.midiOut.sendRawMessage(midi.noteOn);
             }, seq[i].time);
-/*
             setTimeout(() => {
-                this.synth.send([0x80, seq[i].note, 0]);
+                if(this.midiOut !== null) this.midiOut.sendRawMessage(midi.noteOff);
+                this.synth.send(midi.noteOff);
             }, seq[i].time + 5000);
-*/
         } 
-
+        return {word: word, seq: seq};
     }
 };
 

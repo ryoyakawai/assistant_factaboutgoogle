@@ -22,306 +22,298 @@ limitations under the License.
 <head>
   <meta charset=utf-8 />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Action with Google and MIDI</title>
-
-  <!-- Material Design Theming -->
-  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+  <title>Sound Maker</title>
 
   <script src="https://cdn.firebase.com/libs/firebaseui/2.4.1/firebaseui.js"></script>
   <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.4.1/firebaseui.css" />
 
   <link rel="stylesheet" href="main.css">
-
   <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-<div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
-
-  <!-- Header section containing title -->
-  <header class="mdl-layout__header mdl-color-text--white mdl-color--light-blue-700">
-    <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
-      <div class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--8-col-desktop">
-        <h3>Action with Google and MIDI</h3>
-      </div>
+  <script type="text/javascript" src="register_sw.js"></script>
+  <div id="textcanvas"></div>
+  <div id="token_div" style="display: block;">
+    <script src="./bower_components/webcomponentsjs/webcomponents.js"></script>
+    <link rel="import" href="./bower_components/x-webmidi/x-webmidirequestaccess.html">
+    <x-webmidirequestaccess sysex="true" input="true" output="true"></x-webmidirequestaccess>
+    <div id="nav">
+      <span id="updatetoken" class="square_btn">UPDATE TOKEN</span>
+      <x-webmidioutput id="midiout" autoselect="NSX-39 " autoreselect="true"></x-webmidioutput>
     </div>
-  </header>
-
-  <main class="mdl-layout__content mdl-color--grey-100">
-    <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
-
-      <!-- Container for the Table of content -->
-      <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
-        <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-          <!-- div to display the generated Instance ID token -->
-          <div id="signedin" style="display: none;">
-            <div id="token_div" style="display: none;">
-              <h4>Ready to Play</h4>
-              <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
-                      onclick="deleteToken()">Delete Token</button>
-            </div>
-            <div id="permission_div" style="display: none;">
-              <h4>Needs Permission</h4>
-              <p id="token"></p>
-              <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
-                      onclick="requestPermission()">Request Permission</button>
-            </div>
-            <!-- div to display messages received by this app. -->
-            <div id="messages"></div>
-
-          </div>
-          <div id="signedout" style="display:none;">
-            <h4>Please Sign-in</h4>
-            <div id="firebaseui-auth-container"></div>
-          </div>
-        </div>
-      </div>
-
-
-
-      
+  </div>
+  <div id="signedin" style="display: none;">
+    <div id="permission_div" style="display: none;">
+      <p id="token"></p>
+      <button id="requestpermission" class="square_btn">Request Permission</button>
     </div>
-  </main>
-</div>
+    <!-- div to display messages received by this app. -->
+    <!--<div id="messages"></div>-->
+  </div>
+  
+    <div id="signedout" style="display:none;">
+      <div id="firebaseui-auth-container"></div>
+    </div>
 
-<script src="./keys.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>
+  <script src="./keys.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-messaging.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase-auth.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
-<script>
-  firebase.initializeApp(config);
-</script>
+  <script src="https://www.gstatic.com/firebasejs/4.6.0/firebase.js"></script>
+  <script>firebase.initializeApp(config);</script>
 
-<!-- Play Sound[BEGIN] -->
-<script src="./scripts/webaudio-tinysynth.js"></script>
-<script src="./scripts/playword.js"></script>
-<!-- Play Sound[END] --> 
+  <!-- text app -->
+  <script src="./scripts/two.js"></script>
+  <script src="./scripts/text.js"></script>
+  <!-- text app -->
 
 
-<script>
- const messaging = firebase.messaging();
+  <!-- Play Sound[BEGIN] -->
+  <script src="./scripts/webaudio-tinysynth.js"></script>
+  <script src="./scripts/playword.js"></script>
+  <!-- Play Sound[END] --> 
 
- const tokenDivId = 'token_div';
- const permissionDivId = 'permission_div';
+  <script>
+   const messaging = firebase.messaging();
 
- // Play Sound
- // https://github.com/g200kg/webaudio-tinysynth
- const synth = new WebAudioTinySynth({quality:0, useReverb:0});
- const pw = new Playword(synth);
- pw.setbpm(300);
- 
- // [START refresh_token]
- // Callback fired if Instance ID token is updated.
- messaging.onTokenRefresh(function() {
-     messaging.getToken()
-              .then(function(refreshedToken) {
-                  console.log('Token refreshed.');
-                  setTokenSentToServer(false);
-                  sendTokenToServer(refreshedToken);
-                  resetUI();
-              })
-              .catch(function(err) {
-                  console.log('Unable to retrieve refreshed token ', err);
-                  showToken('Unable to retrieve refreshed token ', err);
-              });
- });
- // [END refresh_token]
+   const tokenDivId = 'token_div';
+   const permissionDivId = 'permission_div';
 
- // [START receive_message]
- // Handle incoming messages. Called when:
- // - a message is received while the app has focus
- // - the user clicks on an app notification created by a sevice worker
- //   `messaging.setBackgroundMessageHandler` handler.
- messaging.onMessage(function(payload) {
-     console.log("Message received. ", payload);
-     appendMessage(payload);
-     
-     let word = getParameterByName('play', payload.notification.click_action);
-     if(typeof word != 'undefined' && word !== null) pw.play(word);
-     
-     console.log("[Play Sound] ", word);
+   // Play Sound
+   // https://github.com/g200kg/webaudio-tinysynth
+   const synth = new WebAudioTinySynth({quality:0, useReverb:0});
+   const pw = new Playword(synth);
+   const midi = document.querySelector('#midiout');
+   pw.setbpm(300);
+   pw.setMIDIOutdevice(midi);
+   function tinyPlay(word) {
+       if(word!==null && word!='') {
+           let obj = {};
+           pw.sendProgramChange(1, 9);
+           if(typeof word != 'undefined' && word !== null) obj = pw.play(word);
+           for(let i=0; i<word.length; i++) {
+               add(word.substr(i, 1));
+           }
+           setTimeout(() => {
+               add(word, false);
+           }, 1500)
+       }
+   }
+   
+   // [START refresh_token]
+   // Callback fired if Instance ID token is updated.
+   messaging.onTokenRefresh(function() {
+       messaging.getToken()
+                .then(function(refreshedToken) {
+                    console.log('Token refreshed.');
+                    setTokenSentToServer(false);
+                    sendTokenToServer(refreshedToken);
+                    resetUI();
+                })
+                .catch(function(err) {
+                    console.log('Unable to retrieve refreshed token ', err);
+                    showToken('Unable to retrieve refreshed token ', err);
+                });
+   });
+   // [END refresh_token]
 
- });
- // [END receive_message]
+   // [START receive_message]
+   // Handle incoming messages. Called when:
+   // - a message is received while the app has focus
+   // - the user clicks on an app notification created by a sevice worker
+   //   `messaging.setBackgroundMessageHandler` handler.
+   messaging.onMessage(function(payload) {
+       console.log("Message received. ", payload);
+       //appendMessage(payload);
+       
+       let word = getParameterByName('play', payload.notification.click_action);
+       tinyPlay(word);
+       console.log("[Play Sound] ", word);
+   });
+   // [END receive_message]
 
- function resetUI() {
-     clearMessages();
-     showToken('loading...');
+   function resetUI() {
+       clearMessages();
+       showToken('loading...');
 
-     let word = getParameterByName('play');
-     console.log('HERE', word);
-     if(typeof word != 'undefined' && word !== null) pw.play(word);
-     
-     // [START get_token]
-     // Get Instance ID token. Initially this makes a network call, once retrieved
-     // subsequent calls to getToken will return from cache.
-     messaging.getToken()
-              .then(function(currentToken) {
-                  if (currentToken) {
-                      sendTokenToServer(currentToken);
-                      updateUIForPushEnabled(currentToken);
-                  } else {
-                      // Show permission request.
-                      console.log('No Instance ID token available. Request permission to generate one.');
-                      // Show permission UI.
-                      updateUIForPushPermissionRequired();
-                      setTokenSentToServer(false);
-                  }
-              })
-              .catch(function(err) {
-                  document.querySelector('#messages').innerText="[ERROR:retriving token] Check 'Notification Permission'.";
-                  console.log('An error occurred while retrieving token. ', err);
-                  showToken('Error retrieving Instance ID token. ', err);
-                  setTokenSentToServer(false);
-              });
- }
- // [END get_token]
+       let word = getParameterByName('play');
+       tinyPlay(word);
+       
+       // [START get_token]
+       // Get Instance ID token. Initially this makes a network call, once retrieved
+       // subsequent calls to getToken will return from cache.
+       messaging.getToken()
+                .then(function(currentToken) {
+                    if (currentToken) {
+                        sendTokenToServer(currentToken);
+                        updateUIForPushEnabled(currentToken);
+                    } else {
+                        // Show permission request.
+                        console.log('No Instance ID token available. Request permission to generate one.');
+                        // Show permission UI.
+                        updateUIForPushPermissionRequired();
+                        setTokenSentToServer(false);
+                    }
+                })
+                .catch(function(err) {
+                    document.querySelector('#messages').innerText="[ERROR:retriving token] Check 'Notification Permission'.";
+                    console.log('An error occurred while retrieving token. ', err);
+                    showToken('Error retrieving Instance ID token. ', err);
+                    setTokenSentToServer(false);
+                });
+   }
+   // [END get_token]
 
- function showToken(message) {
-     console.log('[Token Status] ' + message);
- }
+   function showToken(message) {
+       console.log('[Token Status] ' + message);
+   }
 
- // Send the Instance ID token your application server, so that it can:
- // - send messages back to this app
- // - subscribe/unsubscribe the token from topics
- function sendTokenToServer(currentToken) {
-     if (!isTokenSentToServer()) {
-         console.log('Sending token to server...');
-         
-         insertTokenToFirebase(currentToken);
-         setTokenSentToServer(true);
-     } else {
-         console.log('Token already sent to server so won\'t send it again ' +
-                     'unless it changes');
-     }
+   // Send the Instance ID token your application server, so that it can:
+   // - send messages back to this app
+   // - subscribe/unsubscribe the token from topics
+   function sendTokenToServer(currentToken) {
+       if (!isTokenSentToServer()) {
+           console.log('Sending token to server...');
+           
+           insertTokenToFirebase(currentToken);
+           setTokenSentToServer(true);
+       } else {
+           console.log('Token already sent to server so won\'t send it again ' +
+                       'unless it changes');
+       }
 
- }
+   }
 
- function isTokenSentToServer() {
-     return window.localStorage.getItem('sentToServer') == 1;
- }
+   function isTokenSentToServer() {
+       return window.localStorage.getItem('sentToServer') == 1;
+   }
 
- function setTokenSentToServer(sent) {
-     window.localStorage.setItem('sentToServer', sent ? 1 : 0);
- }
+   function setTokenSentToServer(sent) {
+       window.localStorage.setItem('sentToServer', sent ? 1 : 0);
+   }
 
- function showHideDiv(divId, show) {
-     const div = document.querySelector('#' + divId);
-     if (show) {
-         div.style = "display: visible";
-     } else {
-         div.style = "display: none";
-     }
- }
- 
- function requestPermission() {
-     console.log('Requesting permission...');
-     // [START request_permission]
-     messaging.requestPermission()
-              .then(function() {
-                  console.log('Notification permission granted.');
-                  resetUI();
-             })
-              .catch(function(err) {
-                  console.log('Unable to get permission to notify.', err);
-              });
-     // [END request_permission]
- }
- 
- function deleteToken() {
-     messaging.getToken()
-              .then(function(currentToken) {
-                  messaging.deleteToken(currentToken)
-                           .then(function() {
-                               console.log('Token deleted.');
-                               setTokenSentToServer(false);
-                               resetUI();
-                           })
-                           .catch(function(err) {
-                               console.log('Unable to delete token. ', err);
-                           });
-             })
-              .catch(function(err) {
-                  console.log('Error retrieving Instance ID token. ', err);
-                  showToken('Error retrieving Instance ID token. ', err);
-              });
-     
- }
- 
- // Add a message to the messages element.
- function appendMessage(payload) {
-     const messagesElement = document.querySelector('#messages');
-     const dataHeaderELement = document.createElement('h5');
-     const dataElement = document.createElement('pre');
-     dataElement.style = 'overflow-x:hidden;'
-     dataHeaderELement.textContent = 'Received message:';
-     dataElement.textContent = JSON.stringify(payload, null, 2);
-     messagesElement.appendChild(dataHeaderELement);
-     messagesElement.appendChild(dataElement);
- }
+   function insertTokenToFirebase(currentToken) {
+       firebase.database().ref('/fcmTokens').child(currentToken)
+               .set(firebase.auth().currentUser.uid);
+   }
 
- // Clear the messages element of all children.
- function clearMessages() {
-     const messagesElement = document.querySelector('#messages');
-     while (messagesElement.hasChildNodes()) {
-         messagesElement.removeChild(messagesElement.lastChild);
-     }
- }
+   function showHideDiv(divId, show) {
+       const div = document.querySelector('#' + divId);
+       if (show) {
+           div.style = "display: visible";
+       } else {
+           div.style = "display: none";
+       }
+   }
 
- function updateUIForPushEnabled(currentToken) {
-     showHideDiv(tokenDivId, true);
-     showHideDiv(permissionDivId, false);
-     //showToken(currentToken);
- }
+   document.querySelector('#requestpermission').addEventListener('mousedown', requestPermission);
+   
+   function requestPermission() {
+       console.log('Requesting permission...');
+       // [START request_permission]
+       messaging.requestPermission()
+                .then(function() {
+                    console.log('Notification permission granted.');
+                    resetUI();
+                })
+                .catch(function(err) {
+                    console.log('Unable to get permission to notify.', err);
+                });
+       // [END request_permission]
+   }
+   
+   document.querySelector('#updatetoken').addEventListener('mousedown', deleteToken);
+   function deleteToken() {
+       console.log('start updating token');
+       messaging.getToken()
+                .then(function(currentToken) {
+                    messaging.deleteToken(currentToken)
+                             .then(function() {
+                                 console.log('Token deleted.');
+                                 setTokenSentToServer(false);
+                                 resetUI();
+                             })
+                             .catch(function(err) {
+                                 console.log('Unable to delete token. ', err);
+                             });
+                })
+                .catch(function(err) {
+                    console.log('Error retrieving Instance ID token. ', err);
+                    showToken('Error retrieving Instance ID token. ', err);
+                });
+       
+   }
+   
+   // Add a message to the messages element.
+   function appendMessage(payload) {
+       const messagesElement = document.querySelector('#messages');
+       const dataHeaderELement = document.createElement('h5');
+       const dataElement = document.createElement('pre');
+       dataElement.style = 'overflow-x:hidden;'
+       dataHeaderELement.textContent = 'Received message:';
+       dataElement.textContent = JSON.stringify(payload, null, 2);
+       messagesElement.appendChild(dataHeaderELement);
+       messagesElement.appendChild(dataElement);
+   }
 
- function updateUIForPushPermissionRequired() {
-     showHideDiv(tokenDivId, false);
-     showHideDiv(permissionDivId, true);
- }
+   // Clear the messages element of all children.
+   function clearMessages() {
+/*
+       const messagesElement = document.querySelector('#messages');
+       while (messagesElement.hasChildNodes()) {
+           messagesElement.removeChild(messagesElement.lastChild);
+       }
+*/
+   }
 
- function insertTokenToFirebase(currentToken) {
-     firebase.database().ref('/fcmTokens').child(currentToken)
-             .set(firebase.auth().currentUser.uid);
-  }
- 
- function getParameterByName(name, url) {
-     if (!url) url = window.location.href;
-     name = name.replace(/[\[\]]/g, "\\$&");
-     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-         results = regex.exec(url);
-     if (!results) return null;
-     if (!results[2]) return '';
-     return decodeURIComponent(results[2].replace(/\+/g, " "));
- }
- 
- firebase.auth().onAuthStateChanged( (user) => {
-     let signedin = document.querySelector('#signedin');
-     let signedout = document.querySelector('#signedout');
-     let uiConfig = {
-        signInSuccessUrl: 'index.html',
-        signInOptions: [
-          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        ],
-        // Terms of service url.
-        tosUrl: ''
-     };
+   function updateUIForPushEnabled(currentToken) {
+       showHideDiv(tokenDivId, true);
+       showHideDiv(permissionDivId, false);
+       //showToken(currentToken);
+   }
 
-     if(user) {
-         console.log(user);
-         signedin.style.removeProperty('display');
-         console.log(firebase.auth().currentUser.uid);
-         resetUI();
-     } else {
-         signedout.style.removeProperty('display');
-         let ui = new firebaseui.auth.AuthUI(firebase.auth());
-         ui.start('#firebaseui-auth-container', uiConfig);
-     }
+   function updateUIForPushPermissionRequired() {
+       showHideDiv(tokenDivId, false);
+       showHideDiv(permissionDivId, true);
+   }
 
- } );
+   function getParameterByName(name, url) {
+       if (!url) url = window.location.href;
+       name = name.replace(/[\[\]]/g, "\\$&");
+       var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+           results = regex.exec(url);
+       if (!results) return null;
+       if (!results[2]) return '';
+       return decodeURIComponent(results[2].replace(/\+/g, " "));
+   }
+   
+   firebase.auth().onAuthStateChanged( (user) => {
+       let signedin = document.querySelector('#signedin');
+       let signedout = document.querySelector('#signedout');
+       let uiConfig = {
+           signInSuccessUrl: './',
+           signInOptions: [
+               firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+           ],
+           // Terms of service url.
+           tosUrl: ''
+       };
 
-</script>
+       if(user) {
+           console.log(user);
+           signedin.style.removeProperty('display');
+           //requestPermission();
+           console.log(firebase.auth().currentUser.uid);
+           resetUI();
+       } else {
+           signedout.style.removeProperty('display');
+           let ui = new firebaseui.auth.AuthUI(firebase.auth());
+           ui.start('#firebaseui-auth-container', uiConfig);
+       }
+
+   } );
+
+  </script>
 </body>
 </html>

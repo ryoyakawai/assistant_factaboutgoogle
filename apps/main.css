@@ -16,6 +16,7 @@
 
 html, body {
   font-family: 'Roboto', 'Helvetica', sans-serif;
+  background-color: #efefef;
 }
 a {
   text-decoration: none;
@@ -51,4 +52,48 @@ h3 {
   background-size: 40px;
   padding-left: 50px;
   color: white;
+}
+#main {
+  height: 300px;
+}
+
+#signedout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.square_btn {
+  display: inline-block;
+  padding: 0.3em 1em;
+  text-decoration: none;
+  color: #67c5ff;
+  border: solid 2px #67c5ff;
+  border-radius: 3px;
+  transition: .4s;
+  user-select: none;
+  cursor: pointer;
+}
+
+.square_btn:hover {
+  background: #67c5ff;
+  color: white;
+}
+
+#nav {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+#firebaseui-auth-container {
+}
+#signedin, #requestpermission {
+  margin-left:20px
+}
+#updatetoken {
+  visibility: hidden;
+}
+#textcanvas {
+  position: absolute;
+  z-index: -1
 }
