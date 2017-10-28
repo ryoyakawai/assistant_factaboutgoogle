@@ -83,7 +83,9 @@ limitations under the License.
    // Play Sound
    // https://github.com/g200kg/webaudio-tinysynth
    const synth = new WebAudioTinySynth({quality:0, useReverb:0});
-   const pw = new Playword(synth);
+   //const pw = new Playword(synth);
+   const pw = window.playword;
+   pw.init(synth);
    const midi = document.querySelector('#midiout');
    pw.setbpm(300);
    pw.setMIDIOutdevice(midi);
