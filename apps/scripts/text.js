@@ -23,12 +23,14 @@ document.addEventListener('keydown', (e) => {
     let character = String.fromCharCode(e.which);
     add(character);
     tinyPlay(character);
+    runCandlebulb(character);
 });
 document.addEventListener('touchstart', (e) => {
     let r = Math.random();
     let character = String.fromCharCode(Math.floor(r*26) + (r>0.5?97:65));
     add(character);
     tinyPlay(character);
+    runCandlebulb(character);
 });
 
 two.bind('resize', function() {

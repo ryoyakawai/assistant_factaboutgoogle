@@ -84,12 +84,25 @@ async function _runCandlebulb(word) {
     const time = 3000;//word.length() * 10;
     let clr = getRandomRGB(); 
     playbulbCandle.setFlashingColor(clr.r, clr.g, clr.b);
-    timerId = setTimeout(() => {
+
+    // promise version
+/*
+    function stopFlashing(ms) {
+        return new Promise(resolve => {
+            setTimeout(resolve, ms);
+        });
+    };
+    stopFlashing(time).then( _ => {
         playbulbCandle.setCandleEffectColor(defc.r, defc.g, defc.b);
         //playbulbCandle.setColor(defc.r, defc.g, defc.b);
-        timerId = null;
-    }, time);
-
+    });
+*/
+    // await version
+    await sleep(time).then( _ => {
+        playbulbCandle.setCandleEffectColor(defc.r, defc.g, defc.b);
+        //playbulbCandle.setColor(defc.r, defc.g, defc.b);
+    });
+    
     function getRandomRGB() {
         let r = Math.random() * 255,
             g = Math.random() * 255,

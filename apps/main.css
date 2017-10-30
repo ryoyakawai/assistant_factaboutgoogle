@@ -83,6 +83,7 @@ h3 {
   width: 100%;
   display: flex;
   justify-content: flex-end;
+  margin-top:3px;
 }
 
 #firebaseui-auth-container {
