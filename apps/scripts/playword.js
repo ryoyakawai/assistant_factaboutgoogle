@@ -40,7 +40,7 @@
             setTimeout(() => {
                 let s = "0xc"+ch.toString(16, 10);
                 let prgNo = '0x'+('0000'+no.toString(16,10)).substr(-2);
-                if(self.midiOut !== null) self.midiOut.sendRawMessage([s, prgNo]);
+                if(self.midiOut !== null && typeof this.midiOut.sendRawMessage != 'undefined') self.midiOut.sendRawMessage([s, prgNo]);
             }, 500);
 
         }
@@ -68,10 +68,10 @@
                 let midi = {noteOn: [0x91, seq[i].note, 100], noteOff:[0x81, seq[i].note, 100] };
                 setTimeout(() => {
                     this.synth.send(midi.noteOn);
-                    if(this.midiOut !== null) this.midiOut.sendRawMessage(midi.noteOn);
+                    if(this.midiOut !== null && typeof this.midiOut.sendRawMessage != 'undefined') this.midiOut.sendRawMessage(midi.noteOn);
                 }, seq[i].time);
                 setTimeout(() => {
-                    if(this.midiOut !== null) this.midiOut.sendRawMessage(midi.noteOff);
+                    if(this.midiOut !== null && typeof this.midiOut.sendRawMessage != 'undefined') this.midiOut.sendRawMessage(midi.noteOff);
                     this.synth.send(midi.noteOff);
                 }, seq[i].time + 5000);
             } 

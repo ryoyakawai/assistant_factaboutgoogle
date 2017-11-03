@@ -1,4 +1,4 @@
-window.addEventListener('load', () => {
+(function() {
     if(document.location.protocol=="https:" || document.location.hostname=="localhost") {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then( registration => {
@@ -10,5 +10,4 @@ window.addEventListener('load', () => {
             console.warn('ServiceWorker disabled since your access is from HTTP. Use HTTPS to enable it.');
         }
     }
-});
-
+})();

@@ -1,41 +1,39 @@
 /* sw.js */
-let version="1.0";
-let CACHE_NAME = 'sound-maker-'+version;
+const version="1.0";
+const CACHE_NAME = 'sound-maker-'+version;
 
-let urlsToCache = [
+const urlsToCache = [
     'firebase-messaging-sw.js',
     'index.html',
     'main.css',
     'firebase-messaging.html',
-    'index.m.html',
     'manifest.json',
-    'bower_components',
     'google_assistant_logo.png',
     'keys.js',
     'register_sw.js',
     'sw.js',
-    './scripts/two.js',
-    './scripts/text.js',
-    './scripts/webaudio-tinysynth.js',
-    './scripts/playword.js',
-    './bower_components/webcomponentsjs/webcomponents.js',
-    './bower_components/x-webmidi/x-webmidirequestaccess.html',
-    './bower_components/x-webmidi/x-webmidioutput.html',
-    './bower_components/x-webmidi/x-webmidiinput.html',
-    './bower_components/polymer/polymer.html',
-    './bower_components/polymer/polymer-micro.html',
-    './bower_components/polymer/polymer-mini.html'
+    'scripts/firebasefcm.js',
+    'scripts/playbulbCandle.js',
+    'scripts/playword.js',
+    'scripts/text.js',
+    'scripts/two.js',
+    'scripts/webaudio-tinysynth.js',
+    'bower_components/webcomponentsjs/webcomponents.js',
+    'bower_components/x-webmidi/x-webmidirequestaccess.html',
+    'bower_components/x-webmidi/x-webmidioutput.html',
+    'bower_components/x-webmidi/x-webmidiinput.html',
+    'bower_components/polymer/polymer.html',
+    'bower_components/polymer/polymer-micro.html',
+    'bower_components/polymer/polymer-mini.html'
 ];
-/*
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then( cache => {
-            //console.log('Opened cache');
+            console.log('Opened cache');
             return cache.addAll(urlsToCache);
         })
     );
 });
-*/
 
 self.addEventListener('fetch', event => {
     event.respondWith(

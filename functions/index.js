@@ -15,6 +15,7 @@
 **/
 'use strict';
 console.log('[Deploy Done]');
+
 const functions = require('firebase-functions'); // Cloud Functions for Firebase library
 const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
 
@@ -40,6 +41,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     // Get the request source (Google Assistant, Slack, API, etc) and initialize DialogflowApp
     const requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
     const app = new DialogflowApp({request: request, response: response});
+    console.log('app: ', app);
     
     let moment = require('moment');
     let fact = 'Default Fact';
@@ -49,14 +51,31 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     console.log('[Category] ', cateName);
     const actionHandlers = {
         'input.unknown': () => {
-            let body = '['+getTimeStamp()+'] This message send by hooked by fulfillment of Dialogflow through the Firebase Cloud Messaging.';
-            sendMessage.setPayload(
-                'Sound Maker',
-                body,
-                null,
-                'https://actionswithfcm-7362c.firebaseapp.com?play=' + app.getRawInput()
-            );
-            sendMessage.sendNotifications();
+            const command = app.getRawInput().split(':');
+            console.log('[Command]' , command);
+            switch(command[0]) {
+            case 'tell':
+/*
+                app.tell(app.buildRichResponse()
+                        .addSimpleResponse({speech: command[1], displayText: command[1]})
+                        .addBasicCard(
+                            app.buildBasicCard(fact)
+                                .setImage(card.src, card.alt)
+                        ));
+                console.log('app.tell()', command[1]);
+*/
+                break;
+            default:
+                let body = '['+getTimeStamp()+'] This message send by hooked by fulfillment of Dialogflow through the Firebase Cloud Messaging.';
+                sendMessage.setPayload(
+                    'Sound Maker',
+                    body,
+                    null,
+                    'https://actionswithfcm-7362c.firebaseapp.com?play=' + command[0]
+                );
+                sendMessage.sendNotifications();
+                break;
+            }
         },
 /*
         'tell_fact': () => {
